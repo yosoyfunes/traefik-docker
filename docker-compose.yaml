@@ -1,0 +1,42 @@
+version: "3.3"
+
+services:
+
+  traefik:
+    image: "traefik:v2.4"
+    container_name: "traefik"
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  whoami:
+    image: "traefik/whoami"
+    container_name: "simple-service"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.localhost`)"
+      - "traefik.http.routers.whoami.entrypoints=web"
+
+  apache:
+    image: "httpd:alpine"
+    container_name: "apache-service"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.apache.rule=Host(`apache.localhost`)"
+      - "traefik.http.routers.apache.entrypoints=web"
+
+  nginx:
+    image: "nginx:alpine"
+    container_name: "nginx-service"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nginx.rule=Host(`nginx.localhost`)"
+      - "traefik.http.routers.nginx.entrypoints=web"
